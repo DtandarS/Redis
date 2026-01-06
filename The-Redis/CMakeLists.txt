@@ -2,25 +2,27 @@ cmake_minimum_required(VERSION 3.16.0)
 
 #====================================#
 
-project(Redis.io)
+ project(server)
+# project(client)
 
 #====================================#
 
-add_library( HEADER_FILES INTERFACE )
+  add_library( HEADER_FILES INTERFACE )
 
 #====================================#
 
-set( SOURCE_FILES mainc.pp )
-set( CMAKE_CXX_STANDARD 17 )
+  set( SOURCE_FILES main.cpp )
+#  set( SOURCE_FILES client.cpp )
+  set( CMAKE_CXX_STANDARD 17 )
 
 #====================================#
 
-add_executable(Redis.io ${SOURCE_FILES})
+  add_executable(server ${SOURCE_FILES})
+#  add_executable(client ${SOURCE_FILES})
 
 #====================================#
 
-target_include_directories
-(
+target_include_directories(
 
   HEADER_FILES
 
@@ -34,7 +36,8 @@ target_include_directories
 
 target_link_libraries(
 
-  Redis.io PRIVATE
+  server PRIVATE
+#  client PRIVATE
 
   HEADER_FILES
 
