@@ -5,6 +5,7 @@
 
 /*  Firstly. We set some basic library inclusions.  */
 
+#include <assert.h>
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
