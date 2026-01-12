@@ -85,6 +85,13 @@ static int32_t query(int connfd)
     msg(errno == 0 ? "EOF" : "read() error");
     return err;
   }
+  int32_t len = 0;
+  memcpy(&len, rbuf, 4);
+  if (len > max_message)
+  {
+    msg("too long");
+    return -1;
+  }
 }
 
 
