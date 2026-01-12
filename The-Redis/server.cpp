@@ -15,6 +15,7 @@
 
 
 bool isTrue{true};
+static size_t max_message = 4096;
 
 static void msg(const char *msg)
 {
@@ -57,7 +58,7 @@ static int32_t read_full(int fd, char *buf, size_t n)
   return 0;
 }
 
-static int32_t write_all(int fd, const char *buf, size_t n);
+static int32_t write_all(int fd, const char *buf, size_t n)
 {
  while ( n > 0)
  {
@@ -72,6 +73,20 @@ static int32_t write_all(int fd, const char *buf, size_t n);
  }
  return 0;
 }
+
+static int32_t query(int connfd)
+{
+  // 4 byte header. no idea what this do.
+  char rbuf[4 + max_message];
+  errno = 0;
+  int32_t err = read_full(connfd, rbuf, 4);
+  if (err)
+  {
+    msg(errno == 0 ? "EOF" : "read() error");
+    return err;
+  }
+}
+
 
 int main(int argv, char** argc)
 {
