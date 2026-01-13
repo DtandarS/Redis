@@ -92,6 +92,12 @@ static int32_t query(int connfd)
     msg("too long");
     return -1;
   }
+  err = read_full( connfd, &rbuf[4], len );
+  if (err)
+  {
+    msg("read() error");
+    return err;
+  }
 }
 
 
