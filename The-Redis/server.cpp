@@ -22,18 +22,18 @@ static void msg(const char *msg)
   fprintf(stderr, "%s\n", msg);
 }
 
-static void do_something(int connfd)
-{
-  char rbuf[64] = {};
-  ssize_t n =  read(connfd, rbuf, sizeof(rbuf) - 1);
-  if ( n < 0 )
-  {
-    msg("read() error");
-  }
-  printf("client says: %s \n", rbuf);
-  char wbuf[]  = "world";
-  write(connfd, wbuf, strlen(wbuf));
-}
+//static void do_something(int connfd)
+//{
+//  char rbuf[64] = {};
+//  ssize_t n =  read(connfd, rbuf, sizeof(rbuf) - 1);
+//  if ( n < 0 )
+//  {
+//    msg("read() error");
+//  }
+//  printf("client says: %s \n", rbuf);
+//  char wbuf[]  = "world";
+//  write(connfd, wbuf, strlen(wbuf));
+//}
 
 static void die(const char *msg)
 {
@@ -76,7 +76,14 @@ static int32_t write_all(int fd, const char *buf, size_t n)
 
 static int32_t query(int connfd)
 {
-  // 4 byte header. no idea what this do.
+  /* ============================ */
+
+  /*
+    We set a 4 byte header with a maximum allowed message size.
+    Then we reset errno for better diagnostic accuracy.
+    After that we check for the message in 4byte sizes/length chunks until EOF if occured
+  */
+
   char rbuf[4 + max_message];
   errno = 0;
   int32_t err = read_full(connfd, rbuf, 4);
@@ -85,6 +92,14 @@ static int32_t query(int connfd)
     msg(errno == 0 ? "EOF" : "read() error");
     return err;
   }
+
+  /* ============================ */
+
+  /*
+    We first intialize an empty variable, then we copy the rbuf buffer value into our recently initalized variable
+    If the total message is larger than the maximum allowed length then an error occurs.
+  */
+
   int32_t len = 0;
   memcpy(&len, rbuf, 4);
   if (len > max_message)
@@ -92,12 +107,35 @@ static int32_t query(int connfd)
     msg("too long");
     return -1;
   }
+
+  /* ============================ */
+  
+  /*
+    Here we attempt to read the entire body from the 5th element since the first 4 is reserved for headers.
+  */
+
   err = read_full( connfd, &rbuf[4], len );
   if (err)
   {
     msg("read() error");
     return err;
   }
+
+  /* ============================ */
+
+  //  Configuring the do_something over again
+
+  printf("client said: %.*s\n", len, &rbuf[4]);
+
+  // Set a simple answer using the same protocol with read check ups
+  const char reply[] = "You are LOVED";
+  char wbuf[4 + sizeof(reply)];
+  len = (uint32_t)strlen(reply);
+  memcpy(wbuf, &len, 4);
+  memcpy(&wbuf[4], reply, len);
+  return write_all(connfd, wbuf, 4 + len);
+
+  /* ============================ */
 }
 
 
@@ -156,7 +194,7 @@ int main(int argv, char** argc)
     if ( connfd < 0 )
     {continue;}
 
-    do_something(connfd);
+    query(connfd);
     close(connfd);
 
   }
