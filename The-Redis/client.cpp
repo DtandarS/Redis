@@ -2,7 +2,7 @@
 
 #include <master.h>
 
-
+static size_t max_message = 4096;
 
 static void die(const char *msg)
 {
@@ -10,6 +10,45 @@ static void die(const char *msg)
   printf("[%d] %c\n", err, *msg);
   abort();
 }
+
+static int32_t read_full(int fd, char *buf, size_t n)
+{
+  while(n > 0)
+  {
+    ssize_t rv = read(fd, buf, n);
+    if ( rv < 0 )
+    {
+      return -1; // returns error or unexpected EOF
+    }
+    assert((size_t)rv <= n);
+    n -= (size_t)rv;
+    buf += rv; 
+  }
+  return 0;
+}
+
+static int32_t write_all(int fd, const char *buf, size_t n)
+{
+ while ( n > 0)
+ {
+   int rv = write(fd, buf, n);
+   if (rv <= 0)
+   {
+     return -1;
+   }
+   assert((ssize_t)rv <= n);
+   n -= (size_t)rv;
+   buf += rv;
+ }
+ return 0;
+}
+
+static uint32_t query(int fd, const char *msg)
+{
+  uint32_t len =(uint32_t)strlen(msg);
+  if 
+}
+
 
 int main(int arg, char* argv[])
 {
