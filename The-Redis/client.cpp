@@ -1,3 +1,12 @@
+/*
+
+   --  Client Side 
+
+   --  Created by Tomsa da DtandarS
+
+   --  I want a job man........
+
+*/
 
 
 #include <master.h>
@@ -43,10 +52,21 @@ static int32_t write_all(int fd, const char *buf, size_t n)
  return 0;
 }
 
-static uint32_t query(int fd, const char *msg)
+static int32_t query(int fd, const char *msg)
 {
   uint32_t len =(uint32_t)strlen(msg);
-  if 
+  if (len > max_message )
+  {
+    return -1;
+  }
+  //  send request
+  char wbuf[4 + max_message];
+  memcpy(wbuf, &len, 4);
+  memcpy(&wbuf[4], text, len);
+  if (int32_t err = write_all(fd, wbuf, 4 + len))
+  {
+    return err;
+  }
 }
 
 
