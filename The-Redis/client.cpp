@@ -67,6 +67,14 @@ static int32_t query(int fd, const char *msg)
   {
     return err;
   }
+  // 4 byte header
+  char rbuf[4 + max_message];
+  errno = 0;
+  int32_t err = read_full(fd, rbuf, 4);
+  if (err)
+  {
+    msg(errno == 0 ? "EOF" : "read() error");
+  }
 }
 
 
