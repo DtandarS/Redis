@@ -75,6 +75,13 @@ static int32_t query(int fd, const char *msg)
   {
     msg(errno == 0 ? "EOF" : "read() error");
   }
+  memcpy(&len, rbuf, 4);
+  if (len > max_message)
+  {
+    msg("message too long");
+    return -1;
+  }
+
 }
 
 
