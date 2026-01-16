@@ -20,6 +20,11 @@ static void die(const char *msg)
   abort();
 }
 
+static void msg(const char *msg)
+{
+  fprintf(stderr, "%s\n", msg);
+}
+
 static int32_t read_full(int fd, char *buf, size_t n)
 {
   while(n > 0)
@@ -52,9 +57,9 @@ static int32_t write_all(int fd, const char *buf, size_t n)
  return 0;
 }
 
-static int32_t query(int fd, const char *msg)
+static int32_t query(int fd, const char *text)
 {
-  uint32_t len =(uint32_t)strlen(msg);
+  uint32_t len =(uint32_t)strlen(text);
   if (len > max_message )
   {
     return -1;
@@ -73,7 +78,8 @@ static int32_t query(int fd, const char *msg)
   int32_t err = read_full(fd, rbuf, 4);
   if (err)
   {
-    msg(errno == 0 ? "EOF" : "read() error");
+    msg(errno == 0 ? "EOF" : "read() error: 1");
+    return (err);
   }
   memcpy(&len, rbuf, 4);
   if (len > max_message)
@@ -81,7 +87,14 @@ static int32_t query(int fd, const char *msg)
     msg("message too long");
     return -1;
   }
-
+  err = read_full(fd, &rbuf[4], len);
+  if (err)
+  {
+    msg("read() error: 2");
+    return err;
+  }
+  printf("server says %*s\n", len, &rbuf[4] );
+  return 0;
 }
 
 
@@ -106,20 +119,38 @@ int main(int arg, char* argv[])
     die("connect");
   }
 
-  char msg[] = "hello";
-  write(fd, msg, strlen(msg));
+//  char msg[] = "hello";
+//  write(fd, msg, strlen(msg));
+//
+//  char rbuf[64] = {};
+//  ssize_t n = read(fd, rbuf, sizeof(rbuf) - 1);
+//  if (n < 0)
+//  {
+//    die("read");
+//  }
+//
+//  printf("server says %s\n", rbuf);
 
-  char rbuf[64] = {};
-  ssize_t n = read(fd, rbuf, sizeof(rbuf) - 1);
-  if (n < 0)
+  int32_t err = query(fd, "meow");
+  if (err)
   {
-    die("read");
+    goto MESSAGE_DONE;
   }
 
-  printf("server says %s\n", rbuf);
+  err = query(fd, "I am");
+  if (err)
+  {
+    goto MESSAGE_DONE;
+  }
+
+  err = query(fd, "Tomsa");
+  if (err)
+  {
+    goto MESSAGE_DONE;
+  }
+
+MESSAGE_DONE:
   close(fd);
-
-
   return 0;
 
 }

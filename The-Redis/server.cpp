@@ -194,6 +194,13 @@ int main(int argv, char** argc)
     if ( connfd < 0 )
     {continue;}
 
+    while (true)
+    {
+      int32_t err = query(connfd);
+      if (err)
+      { break; }
+    }
+
     query(connfd);
     close(connfd);
 

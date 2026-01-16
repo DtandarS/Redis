@@ -863,7 +863,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "server"
+			"value" : "client"
 		},
 		{
 			"name" : "CMAKE_PROJECT_VERSION",
