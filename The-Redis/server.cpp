@@ -74,7 +74,7 @@ static int32_t write_all(int fd, const char *buf, size_t n)
  return 0;
 }
 
-static int32_t query(int connfd)
+static int32_t one_req(int connfd)
 {
   /* ============================ */
 
@@ -100,7 +100,7 @@ static int32_t query(int connfd)
     If the total message is larger than the maximum allowed length then an error occurs.
   */
 
-  int32_t len = 0;
+  uint32_t len = 0;
   memcpy(&len, rbuf, 4);
   if (len > max_message)
   {
@@ -128,7 +128,7 @@ static int32_t query(int connfd)
   printf("client said: %.*s\n", len, &rbuf[4]);
 
   // Set a simple answer using the same protocol with read check ups
-  const char reply[] = "You are LOVED";
+  const char reply[] = "You meow";
   char wbuf[4 + sizeof(reply)];
   len = (uint32_t)strlen(reply);
   memcpy(wbuf, &len, 4);
@@ -196,12 +196,11 @@ int main(int argv, char** argc)
 
     while (true)
     {
-      int32_t err = query(connfd);
+      int32_t err = one_req(connfd);
       if (err)
       { break; }
     }
 
-    query(connfd);
     close(connfd);
 
   }
