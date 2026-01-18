@@ -201,8 +201,7 @@ int main(int argv, char** argc)
       { break; }
     }
 
-    close(connfd);
-
+  close(connfd);
   }
 
 
