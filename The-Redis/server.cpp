@@ -84,6 +84,7 @@ static int32_t one_req(int connfd)
     After that we check for the message in 4byte sizes/length chunks until EOF if occured
   */
 
+
   char rbuf[4 + max_message];
   errno = 0;
   int32_t err = read_full(connfd, rbuf, 4);

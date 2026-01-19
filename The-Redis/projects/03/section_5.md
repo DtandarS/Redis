@@ -28,4 +28,15 @@ With all of these 3 protocols combined each loop iteration waits for readiness t
 
 Both read and write kernel buffer needs to process and return the data immediately for the next to be processed. Both of these non-blocking function can be called repeatedly in order to empty & fill out read and write without interruption.
 
+`accept()` syscall is similar to `read()` in that both consumes items from buffer queue.
+
+Both non-blocking read &write uses the same syscall as blocking read & write. To put the socket into non-blocking mode. We set the flag with 0-NONBLOCK flag
+
+IO readiness is platform specific and there is several ways to do it.
+
+Simplest one on Linux is poll(). We will use the same syscall on macOS. `poll()` takes an array of fds each with their on input and output flag
+
+Readiness flags are all different in shapes but using them isn't much different from another. Although we are using poll(). For Real applications on Linux we should use epoll() instead since it is much more scalable. 
+
+The readiness flag shouldn't be used with disk files since the kernel level buffer doesn't exist for disk files and is then undefined. There is no way to pull from undefined unless complexity is added. All disk IOs must be done outside of event loops, in a thread poll
 
