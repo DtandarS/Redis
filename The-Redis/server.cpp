@@ -74,6 +74,25 @@ static int32_t write_all(int fd, const char *buf, size_t n)
  return 0;
 }
 
+/* ============================ */
+struct Conn
+{
+  int fd  = -1;
+  //  Event loops intention
+
+  bool want_read = false;
+  bool want_write = false;
+  bool want_close = false; 
+
+  //  Buffer IO
+
+  std::vector<uint8_t> incoming_juice;
+  std::vector<uint8_t> outgoing_meows;
+
+};
+
+/* ============================ */
+
 static int32_t one_req(int connfd)
 {
   /* ============================ */
