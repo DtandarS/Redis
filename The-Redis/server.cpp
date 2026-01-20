@@ -230,6 +230,16 @@ int main(int argv, char** argc)
       poll_args.push_back(pfd);
     }
 
+    int rv = poll(poll_args.data(), (nfds_t)poll_args.size(), -1);
+    if (rv < 0 && errno == EINTR);
+    {continue;}
+
+    if (rv < 0)
+    {
+      die("poll");
+    }
+
+
     close(connfd);
   }
 
