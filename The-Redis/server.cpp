@@ -205,23 +205,32 @@ int main(int argv, char** argc)
   { die("listen()"); }
 
 
+
+  //  Map of all the clients connections keyed by fd
+  std::vector<Conn *> fd2conn;
+  //  The even loop itself
+  std::vector<struct pollfd> poll_args;
   while( isTrue == true )
   {
-
-    struct sockaddr_in client_addr = {};
-    socklen_t addrlen = sizeof(client_addr);
-    int connfd = accept(fd, (struct sockaddr *)&client_addr, &addrlen);
-    if ( connfd < 0 )
-    {continue;}
-
-    while (true)
+    //  Prepares the arguments for poll()
+    poll_args.clear();
+    struct pollfd prd = {fd, POLLIN, 0};
+    poll_args.push_back(prd);
+    //  The rest of the following is the socket listening
+    for (Conn *conn : fd2conn)
     {
-      int32_t err = one_req(connfd);
-      if (err)
-      { break; }
+      if (!conn)
+      {continue;}
+      struct pollfd pfd = {conn -> fd, POLLERR, 0};
+      //  poll() flags from the applications intent
+      if (conn -> want_reads)
+      {pfd.events |= POLLIN}
+      if (conn -> want_writes)
+      {pfd.events |= POLLOUT}
+      poll_args.push_back(pfd);
     }
 
-  close(connfd);
+    close(connfd);
   }
 
 
