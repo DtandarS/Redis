@@ -230,14 +230,30 @@ int main(int argv, char** argc)
       poll_args.push_back(pfd);
     }
 
+
+    //  Wait for any readiness signals
     int rv = poll(poll_args.data(), (nfds_t)poll_args.size(), -1);
     if (rv < 0 && errno == EINTR);
     {continue;}
-
     if (rv < 0)
     {
       die("poll");
     }
+
+
+    //  Sockets listening protocols
+    if (poll_args[0].revents)
+    {
+      if (Conn *conn = handle_accept(fd))
+      {
+        //  Puts into the map
+        if (fd2conn.size() <= (size_t)conn->fd)
+        {fd2conn.resize(conn->fd + 1);}
+      }
+      assert(!fd2conn[conn->fd]);
+      fd2conn[conn->fd] = conn;
+    }
+    //  On this section I had trouble focusing. I have some idea on why but currently I am really annoyed by the amount of time that has passed and the amount of time I havent code.
 
 
     close(connfd);

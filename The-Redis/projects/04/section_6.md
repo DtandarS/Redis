@@ -21,15 +21,15 @@ struct Conn
 };
 ```
 
-We then change up the main iteration loop to accept multiple connections and store those on a map to be processessed using poll()
+We then change up the main iteration loop to accept multiple connections and store those on a map to be processessed using `poll()`
 
-poll() usually return when atleas on e of the fds is ready but ocationally errno might retunr EINTR when nothing is ready
+`poll()` usually return when at least one of the fds is ready but ocationally errno might return EINTR when nothing is ready
 
 EINTR is a handler that processes some accidental Unix signals. It is not expected in non-blocking syscall
 
 Even if we didn't use signal. We should still handle EINTR, because it may cause unexpected signals.
 
-accept() is treated like read() readiness notification so we use pollin. After this we check the first fd to see if we can accept().
+`accept()` is treated like `read()` readiness notification so we use pollin. After this we check the first fd to see if we can `accept()`.
 
 
 

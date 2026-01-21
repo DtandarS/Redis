@@ -5,6 +5,8 @@
 
 /*  Firstly. We set some basic library inclusions.  */
 
+#include <fcntl.h>
+#include <poll.h>
 #include <assert.h>
 #include <cstdio>
 #include <cstddef>
@@ -25,6 +27,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
 
 
 /*  Right after this we can add some basic outside source library  */
