@@ -253,7 +253,30 @@ int main(int argv, char** argc)
       assert(!fd2conn[conn->fd]);
       fd2conn[conn->fd] = conn;
     }
-    //  On this section I had trouble focusing. I have some idea on why but currently I am really annoyed by the amount of time that has passed and the amount of time I havent code.
+    //  On this section I had trouble focusing. I have some idea on why but currently I am really annoyed by the amount of time that has passed and the amount of time I haven't code.
+
+    //  Note that we skip the first one since it is reserved for listening. 
+    for (size_t i = 1; i < poll_args.size(); ++i)
+    {
+      uint32_t ready = poll_args[i].revents();
+      if (ready == 0)
+      {continue;}
+
+      Conn *conn = fd2conn[poll_args[i].fd];
+      if (ready & POLLIN)
+      {handle_read(conn);}
+      if (ready & POLLOUT)
+      {handle_write(conn);}
+
+      //  Handles poll error POLLERR
+      if ((ready & POLLERR) || conn-> wants_close)
+      {
+        (void)close(conn->fd);
+        fd2conn[conn->fd] = NULL;
+        delete conn;
+      }
+    }
+
 
 
     close(connfd);
