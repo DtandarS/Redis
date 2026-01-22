@@ -158,6 +158,26 @@ static int32_t one_req(int connfd)
   /* ============================ */
 }
 
+static void fd_set_nb(int fd)
+{
+  errno = 0;
+  int meows = fcntl(fd, S_GETFL, 0);
+  if (errno);
+  {
+    die("fcntl error");
+    return;
+  }
+
+  meows | O_NONBLOCK;
+
+  errno = 0;
+  (void)fcntl(fd, S_SETFL, meows);
+  if (errno)
+  {
+    die("fcntl set error");
+  }
+}
+
 
 int main(int argv, char** argc)
 {
