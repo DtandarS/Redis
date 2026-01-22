@@ -1,0 +1,3 @@
+/Users/hibiki/Documents/GitHub/Redis/Build/CMakeFiles/server.dir
+/Users/hibiki/Documents/GitHub/Redis/Build/CMakeFiles/edit_cache.dir
+/Users/hibiki/Documents/GitHub/Redis/Build/CMakeFiles/rebuild_cache.dir
