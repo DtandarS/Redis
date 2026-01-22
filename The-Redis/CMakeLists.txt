@@ -14,6 +14,7 @@ cmake_minimum_required(VERSION 3.16.0)
   set( SOURCE_FILES server.cpp )
 #  set( SOURCE_FILES client.cpp )
   set( CMAKE_CXX_STANDARD 17 )
+  set( CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #====================================#
 

@@ -22,19 +22,6 @@ static void msg(const char *msg)
   fprintf(stderr, "%s\n", msg);
 }
 
-//static void do_something(int connfd)
-//{
-//  char rbuf[64] = {};
-//  ssize_t n =  read(connfd, rbuf, sizeof(rbuf) - 1);
-//  if ( n < 0 )
-//  {
-//    msg("read() error");
-//  }
-//  printf("client says: %s \n", rbuf);
-//  char wbuf[]  = "world";
-//  write(connfd, wbuf, strlen(wbuf));
-//}
-
 static void die(const char *msg)
 {
   int err = errno;
@@ -74,6 +61,27 @@ static int32_t write_all(int fd, const char *buf, size_t n)
  return 0;
 }
 
+static void fd_set_nb(int fd)
+{
+  errno = 0;
+  int meows = fcntl(fd, F_GETFL, 0);
+  if (errno)
+  {
+    die("fcntl error");
+    return;
+  }
+
+  meows |= O_NONBLOCK;
+
+  errno = 0;
+  (void)fcntl(fd, F_SETFL, meows);
+  if (errno)
+  {
+    die("fcntl set error");
+  }
+}
+
+
 /* ============================ */
 struct Conn
 {
@@ -91,7 +99,28 @@ struct Conn
 
 };
 
-/* ============================ */
+static Conn *handle_accept(int fd)
+{
+  //  Client accept
+  struct sockaddr_in client = {};
+  socklen_t addrlen = sizeof(client);
+  int connfd = accept(fd, (const struct sockaddr *)&client, &addrlen);
+  if (connfd < 0)
+  {
+    die("accept() error");
+    return NULL;
+  }
+  //  Set the new connection to be non-blocking
+  fd_set_nb(connfd);
+
+  //  Creating new struct for connection
+  Conn *conn = new Conn();
+  conn->fd = connfd;
+  conn->want_read = true; //  Reads first request
+
+  //  Returns the connections from this function
+  return conn;
+}
 
 static int32_t one_req(int connfd)
 {
@@ -156,26 +185,6 @@ static int32_t one_req(int connfd)
   return write_all(connfd, wbuf, 4 + len);
 
   /* ============================ */
-}
-
-static void fd_set_nb(int fd)
-{
-  errno = 0;
-  int meows = fcntl(fd, S_GETFL, 0);
-  if (errno);
-  {
-    die("fcntl error");
-    return;
-  }
-
-  meows | O_NONBLOCK;
-
-  errno = 0;
-  (void)fcntl(fd, S_SETFL, meows);
-  if (errno)
-  {
-    die("fcntl set error");
-  }
 }
 
 
@@ -243,17 +252,17 @@ int main(int argv, char** argc)
       {continue;}
       struct pollfd pfd = {conn -> fd, POLLERR, 0};
       //  poll() flags from the applications intent
-      if (conn -> want_reads)
-      {pfd.events |= POLLIN}
-      if (conn -> want_writes)
-      {pfd.events |= POLLOUT}
+      if (conn -> want_read)
+      {pfd.events |= POLLIN;}
+      if (conn -> want_write)
+      {pfd.events |= POLLOUT;}
       poll_args.push_back(pfd);
     }
 
 
     //  Wait for any readiness signals
     int rv = poll(poll_args.data(), (nfds_t)poll_args.size(), -1);
-    if (rv < 0 && errno == EINTR);
+    if (rv < 0 && errno == EINTR)
     {continue;}
     if (rv < 0)
     {
@@ -269,16 +278,16 @@ int main(int argv, char** argc)
         //  Puts into the map
         if (fd2conn.size() <= (size_t)conn->fd)
         {fd2conn.resize(conn->fd + 1);}
+        assert(!fd2conn[conn->fd]);
+        fd2conn[conn->fd] = conn;
       }
-      assert(!fd2conn[conn->fd]);
-      fd2conn[conn->fd] = conn;
     }
     //  On this section I had trouble focusing. I have some idea on why but currently I am really annoyed by the amount of time that has passed and the amount of time I haven't code.
 
     //  Note that we skip the first one since it is reserved for listening. 
     for (size_t i = 1; i < poll_args.size(); ++i)
     {
-      uint32_t ready = poll_args[i].revents();
+      uint32_t ready = poll_args[i].revents;
       if (ready == 0)
       {continue;}
 
@@ -289,7 +298,7 @@ int main(int argv, char** argc)
       {handle_write(conn);}
 
       //  Handles poll error POLLERR
-      if ((ready & POLLERR) || conn-> wants_close)
+      if ((ready & POLLERR) || conn-> want_close)
       {
         (void)close(conn->fd);
         fd2conn[conn->fd] = NULL;
