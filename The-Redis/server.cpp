@@ -1,4 +1,3 @@
-
 /*
 
 
@@ -99,28 +98,6 @@ struct Conn
 
 };
 
-static Conn *handle_accept(int fd)
-{
-  //  Client accept
-  struct sockaddr_in client = {};
-  socklen_t addrlen = sizeof(client);
-  int connfd = accept(fd, (const struct sockaddr *)&client, &addrlen);
-  if (connfd < 0)
-  {
-    die("accept() error");
-    return NULL;
-  }
-  //  Set the new connection to be non-blocking
-  fd_set_nb(connfd);
-
-  //  Creating new struct for connection
-  Conn *conn = new Conn();
-  conn->fd = connfd;
-  conn->want_read = true; //  Reads first request
-
-  //  Returns the connections from this function
-  return conn;
-}
 
 static int32_t one_req(int connfd)
 {
@@ -185,6 +162,46 @@ static int32_t one_req(int connfd)
   return write_all(connfd, wbuf, 4 + len);
 
   /* ============================ */
+}
+
+static Conn *handle_accept(int fd)
+{
+  //  Client accept
+  struct sockaddr_in client = {};
+  socklen_t addrlen = sizeof(client);
+  int connfd = accept(fd, (const struct sockaddr *)&client, &addrlen);
+  if (connfd < 0)
+  {
+    die("accept() error");
+    return NULL;
+  }
+  //  Set the new connection to be non-blocking
+  fd_set_nb(connfd);
+
+  //  Creating new struct for connection
+  Conn *conn = new Conn();
+  conn->fd = connfd;
+  conn->want_read = true; //  Reads first request
+
+  //  Returns the connections from this function
+  return conn;
+}
+
+static void handle_read(Conn *conn)
+{
+  //  This does the non-blocking read
+  uint8_t rbuf[4 * 1024];
+  ssize_t rv = read(conn->fd, rbuf, sizeof(rbuf));
+  if (rv <= 0)
+  {
+    conn->want_close = true;
+    return;
+  }
+  //  Adds new data into the 'Conn::incoming_juice' buffer
+  buf_append(conn->incoming_juice, rbuf, (size_t)rv);
+
+
+  one_req(conn);
 }
 
 
