@@ -21,6 +21,11 @@ static void msg(const char *msg)
   fprintf(stderr, "%s\n", msg);
 }
 
+static void msg_errno(const char *msg)
+{
+  fprintf(stderr, "errno[%d] %s\n", errno, msg);
+}
+
 static void die(const char *msg)
 {
   int err = errno;
@@ -99,69 +104,32 @@ struct Conn
 };
 
 
-static int32_t one_req(int connfd)
+static bool one_req(Conn *conn)
 {
-  /* ============================ */
-
-  /*
-    We set a 4 byte header with a maximum allowed message size.
-    Then we reset errno for better diagnostic accuracy.
-    After that we check for the message in 4byte sizes/length chunks until EOF if occured
-  */
-
-
-  char rbuf[4 + max_message];
-  errno = 0;
-  int32_t err = read_full(connfd, rbuf, 4);
-  if (err)
-  {
-    msg(errno == 0 ? "EOF" : "read() error");
-    return err;
-  }
-
-  /* ============================ */
-
-  /*
-    We first intialize an empty variable, then we copy the rbuf buffer value into our recently initalized variable
-    If the total message is larger than the maximum allowed length then an error occurs.
-  */
-
+  //  This one tries to parse the protocol: message header
+  if (conn->incoming_juice.size() < 4)
+  {return false;}
   uint32_t len = 0;
-  memcpy(&len, rbuf, 4);
+  memcpy(&len, conn->incoming_juice.data(), 4);
   if (len > max_message)
   {
     msg("too long");
-    return -1;
+    conn->want_close = true;
+    return false;
   }
 
-  /* ============================ */
-  
-  /*
-    Here we attempt to read the entire body from the 5th element since the first 4 is reserved for headers.
-  */
+  //  Parcing the message body
+  if (4 + len > conn->incoming_juice.size())
+  {return false;}
+  const uint8_t *request = &conn->incoming_juice[4];
+  printf("client says : len:%d data:%.*s\n",
+      len, len < 100 ? len : 100,  request);
+  buf_append(conn->outgoing_meows, (const uint8_t *)&len, 4);
+  buf_append(conn->outgoing_meows, request, len);
 
-  err = read_full( connfd, &rbuf[4], len );
-  if (err)
-  {
-    msg("read() error");
-    return err;
-  }
+  buf_consume(conn->incoming_juice, 4 + len);
 
-  /* ============================ */
-
-  //  Configuring the do_something over again
-
-  printf("client said: %.*s\n", len, &rbuf[4]);
-
-  // Set a simple answer using the same protocol with read check ups
-  const char reply[] = "You meow";
-  char wbuf[4 + sizeof(reply)];
-  len = (uint32_t)strlen(reply);
-  memcpy(wbuf, &len, 4);
-  memcpy(&wbuf[4], reply, len);
-  return write_all(connfd, wbuf, 4 + len);
-
-  /* ============================ */
+  return true;  //  Returns true on success
 }
 
 static Conn *handle_accept(int fd)
@@ -192,14 +160,41 @@ static void handle_read(Conn *conn)
   //  This does the non-blocking read
   uint8_t rbuf[4 * 1024];
   ssize_t rv = read(conn->fd, rbuf, sizeof(rbuf));
+  if (rv < 0 && errno == EAGAIN) 
+  {return;}
+  //  Handles IO error
   if (rv <= 0)
   {
+    msg("read() error");
+    conn->want_close = true;
+    return; //  Want close
+  }
+  //  Simple EOF handler
+  if (rv == 0 )
+  {
+    if (conn->incoming_juice.size() == 0)
+    {msg("client closed");}
+    else
+    {msg("Unexpected EOF");}
     conn->want_close = true;
     return;
   }
   //  Adds new data into the 'Conn::incoming_juice' buffer
   buf_append(conn->incoming_juice, rbuf, (size_t)rv);
 
+  //  Parcing the request
+  while (one_req(conn))
+  {} 
+
+
+  if (conn->outgoing_meows.size() == 0)
+  {
+    msg("ready to write");
+    conn->want_read = false;
+    conn->want_write = true;
+
+    return handle_write(conn);
+  }
 
   one_req(conn);
 }
