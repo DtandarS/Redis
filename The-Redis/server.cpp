@@ -102,7 +102,12 @@ struct Conn
   std::vector<uint8_t> outgoing_meows;
 
 };
+/* ============================ */
 
+static void buf_append(std::vector<uint8_t> &buf, const uint8_t *data, size_t len)
+{
+  buf.insert(buf.end(), data, data + len);
+}
 
 static bool one_req(Conn *conn)
 {
