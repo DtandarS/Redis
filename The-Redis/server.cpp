@@ -23,7 +23,8 @@ static void msg(const char *msg)
 
 static void msg_errno(const char *msg)
 {
-  fprintf(stderr, "errno[%d] %s\n", errno, msg);
+  int err = errno;
+  fprintf(stderr, "errno[%d] %s\n", err, msg);
 }
 
 static void die(const char *msg)
@@ -38,11 +39,17 @@ int main(int argv, char** argc)
 
   int port = 2005;
   //  FD stand for descriptor
-  int FD = socket(PF_INET, SOCK_STREAM, 0);
+  int FD = socket(AF_INET, SOCK_STREAM, 0);
   /* ============================*/
 
-  //  PF_NET is for IPV4 only 
-  //  PF_NET6 is for IPV6 only
+  //  PF_INET is for IPV4 only 
+  //  PF_INET6 is for IPV6 only
+
+
+  //  You can alternatively use AF_INET
+
+  //  AF_INET is for IPV4 only 
+  //  AF_INET6 is for IPV6 only
 
   /* ============================*/
 
@@ -63,8 +70,8 @@ int main(int argv, char** argc)
   /* ============================*/
 
   sockaddr_in addr = {};
-  addr.sin_family = PF_INET;
-  addr.sin_port = htons(port); // This is to set the port
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(port); //  This one sets the the Host to Network port
   addr.sin_addr.s_addr = htonl(0); //  This sets the IP to 0.0.0.0 
   int rv = bind(fd, (const struct sockaddr *)&addr, sizeof(addr));
   if (rv) 
