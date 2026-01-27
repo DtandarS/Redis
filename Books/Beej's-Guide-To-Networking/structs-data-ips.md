@@ -27,4 +27,29 @@ There is another addresses that is used by TCP(stream sockets) and coincidentall
 
 The ports are needed to differentiate two or more services in a single computer from the same IP address. Usually HTTP uses port 80. Telnet uses 23, SMTP uses port 25, the Doom game uses the port 666, so on and so forth. Ports under 1024 are usually special and requires a special OS privilege to use.
 
+---
+## Byte Order
+
+Big-Endian is a way for your PC to store data with a big end first
+
+Little-Endian is way for you PC to store data in reverse order
+
+Say we want to store a two-byte hex value of b34f. Big-Endian would accomplish this by storing it in sequential byte b3 followed by 4f. Little-Endian on the other hand stores data in reverse order so 4f followed by 3b
+
+Your computer stores Host Byte Order all in different way depending on the architecture of the processing unit.
+
+Data structures must be filled out with two- or four-byte numbers when building the package.
+
+You don't need to know the native Host Byte Order since you get to assume Host Byte Order is not even rightr and we'll get to run the values through a function that vonberts these value into Network Byte Orders
+
+Say we want to convert short (e.g. two bytes) Host to Network Byte order. We will have to use htons()
+
+```
+htons()  --  Host to Network short
+htonl()  --  Host to Network long
+ntohs()  --  Network to Host short
+ntohl()  --  Network to Host long
+```
+
+Basically we always want to convert from Host Byte Order to Network Byte Order before we sent to package out to the wild. Then on the recipient computer we want to convert Network Byte Order back to Host Byte Order.
 
