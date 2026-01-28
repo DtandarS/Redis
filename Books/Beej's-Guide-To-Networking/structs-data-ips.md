@@ -78,6 +78,19 @@ To deal with this, programmers have developed `sockaddr_in`. "in" stands for "in
 
 And at last we havbe sockaddr_storage that's designed to be large enough storage to hold both IPv4 and IPv6 address. We pass to this parallel structure if for example we fill out sockaddr. We can check the ss_family for the IPv4 or IPv6 then cast it to their respective structures.
 
+---
+## IP Addresses Part 2
 
+There are multiple function we can use that allow us to manipulate IP addresses
+
+Say we have a sockaddr_in, ina and IP "192.168.31.3." that we want to store into it. The function we want to use is inet_pton(). pton() stand for presentation to network. It converts IP in numbers-and-dot notation into struct in_addr or in6_addr depending on whether you use AF_INET or AF6_INET.
+
+inet_pton() always returns -1 on error and 0 on messed up addresses. So make sure the end value is always greater than 0.
+
+Great now we can convert strings of IP addresses into binary representations. But what if we want to go the opposite route? Say you want to print these binaries to a readable string text. In this case we use inet_ntop() - ntop stands for network to presentation.
+
+When we call inet_ntop() we will pass the address type(either IPv4 or IPv6), the address itself, a pointer to a string to hold the result, lastly the maximum length of the string.
+
+Note that his will not do any nameserver lookups. It only works on numeric IP addresses you input. You will need getaddrinfo() for this. We will go over this later.
 
 
