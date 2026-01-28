@@ -1,4 +1,14 @@
 # IP Addresses, Structs, and Data Munging
+
+<!--toc:start-->
+- [IP Addresses, Structs, and Data Munging](#ip-addresses-structs-and-data-munging)
+  - [Internet Address Versions](#internet-address-versions)
+  - [Subnets](#subnets)
+  - [Port Number](#port-number)
+  - [Byte Order](#byte-order)
+  - [Internet Struct](#internet-struct)
+<!--toc:end-->
+
 ---
 ## Internet Address Versions
 IP addresses has two versions. Version 4 and version 6, both respectively called IPv4 and IPv6.
@@ -52,4 +62,22 @@ ntohl()  --  Network to Host long
 ```
 
 Basically we always want to convert from Host Byte Order to Network Byte Order before we sent to package out to the wild. Then on the recipient computer we want to convert Network Byte Order back to Host Byte Order.
+
+---
+## Internet Struct
+
+The first struct we should call is addrinfo. It contains info used for socket preparation. Nothing else really. 
+
+We can use `AF_INET` for IPv4 or `AF_INET6` for IPv6 
+
+Technically you could just call getaddrinfo() to fill out your addrinfo structure with. To get most out of the these structures it is good to take a look underneath the hood
+
+Sockaddr structure's `sa_family` uses either `AF_INET` or `AF_INET6` in our use cases but it can be really anything. `sa_data` hold destination address and port number for the socket. But this is unyielding since we have to pack the addresses all by ourself. Not very efficient
+
+To deal with this, programmers have developed `sockaddr_in`. "in" stands for "internet". This is mainly for IPv4 usage. For IPv6 similar is also implemented called `sockaddr_in6`. `sockadder_in`'s first elemenet `sin_family` corresponds to sockaddr's `sa_family` and should be set to `AF_INET`. `Sin_zero` should be set to zeros with `memset()`. Finally `sin_port` should be or more like must be set to Network Byte Order aka `htons()`
+
+And at last we havbe sockaddr_storage that's designed to be large enough storage to hold both IPv4 and IPv6 address. We pass to this parallel structure if for example we fill out sockaddr. We can check the ss_family for the IPv4 or IPv6 then cast it to their respective structures.
+
+
+
 
