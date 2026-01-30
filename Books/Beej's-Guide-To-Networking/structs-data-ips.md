@@ -93,4 +93,10 @@ When we call inet_ntop() we will pass the address type(either IPv4 or IPv6), the
 
 Note that his will not do any nameserver lookups. It only works on numeric IP addresses you input. You will need getaddrinfo() for this. We will go over this later.
 
+---
+## Private Networks
+
+Firewalls are in place to protect networks and hides it for the rest of the world. Firewalls use NAT processes to translate internal IP to external IP. NAT stands for "Network Address Translation". You don't really need to know about NAT since it is all done transparently. 
+
+Firewalls translate from public to private IPs./ All devices have dedicated private IPs. Most common ones we'll see are 10.x.x.x., 192.168.x.x.(x are usually between 0-255), 172.y.x.x. (y goes between 16-31) 
 
