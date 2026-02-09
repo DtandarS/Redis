@@ -37,64 +37,8 @@ static void die(const char *msg)
 int main(int argv, char** argc)
 {
 
-  int port = 2005;
-  //  FD stand for descriptor
-  int FD = socket(AF_INET, SOCK_STREAM, 0);
-  /* ============================*/
-
-  //  PF_INET is for IPV4 only 
-  //  PF_INET6 is for IPV6 only
-
-
-  //  You can alternatively use AF_INET
-
-  //  AF_INET is for IPV4 only 
-  //  AF_INET6 is for IPV6 only
-
-  /* ============================*/
-
-  //  SOCK_STREAM is for TCP usage
-  //  SOCK_DGRAM is for UDP usage
-
-  /* ============================*/
-
-
-  int val = 1;
-  setsockopt( fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val) );
-
-  /* ============================*/
-
-  //  When setting SO_REUSEADDR to an integer 1 value we have set it is set to true since this option only accepts boolean values. 
-  //  If this option is not set the program can not attach it self to the same ip:port after restart.
-
-  /* ============================*/
-
-  sockaddr_in addr = {};
-  addr.sin_family = AF_INET;
-  addr.sin_port = htons(port); //  This one sets the the Host to Network port
-  addr.sin_addr.s_addr = htonl(0); //  This sets the IP to 0.0.0.0 
-  int rv = bind(fd, (const struct sockaddr *)&addr, sizeof(addr));
-  if (rv) 
-  { die("bind()"); }
-
-  //  To set port you can either use declared variable or set the port manually each time. 
-  //  Setting IP address = htonl(0x01020304) 0x01020304 is set to 1.2.3.4 IP address
-
-
-  //  Some real listening shit
-  rv = listen(fd, SOMAXCONN);
-  if (rv)
-  { die("listen()"); }
-
-
-
-
-  close(connfd);
-
-
 
   return 0;
-
 }
 
 
