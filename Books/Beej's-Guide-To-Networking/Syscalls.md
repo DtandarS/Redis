@@ -18,6 +18,30 @@ int getaddrinfo(
 
 ```
 
+``` cpp
+
+int status;
+struct addrinfo hints;
+struct addrinfo *server_info;
+
+memset(&hints, 0, sizeof hints);
+hints.ai_family = AF_INET;
+//  You can set this with AF_INET or AF_INET6 for each respective version. or AF_UNSPEC if you don't care whether we are using IPv4 or IPv6
+
+hints.ai_socktype = SOCK_STREAM
+//  This can be set to either datagram aka SOCK_DGRAM or regular stream socket aka SOCK_STREAM
+
+
+if ( (status = getaddrinfo(NULL, "25565", &hints, &server_info)) != 0 )
+{
+
+fprintf(stderr, "getaddrinfo() error [ %s\n ]", gai_strerror(status));
+exit(1);
+
+}
+
+```
+
 
 
 
