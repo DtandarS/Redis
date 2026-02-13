@@ -39,8 +39,15 @@ fprintf(stderr, "getaddrinfo() error [ %s\n ]", gai_strerror(status));
 exit(1);
 
 }
-
 ```
+
+We can set version flags to AF_UNSPEC if we don't care about whether we are using IPv4 or IPv6. To specify version we can just use AF_INET or AF_INET6.
+
+AI_Passive uses local host address and sent it to socket structure. This is good for hardcode prevention.
+
+If getaddrinfo() return non-zero value then we have an error. We can print out the error with gai_strerror(). 
+
+After everything we can and should free up the allocated linked list getaddrinfo() gave us with freeaddrinfo().
 
 
 
